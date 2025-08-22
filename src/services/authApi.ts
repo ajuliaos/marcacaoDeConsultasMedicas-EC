@@ -91,8 +91,37 @@ export const authApiService = {
   },
 
   /**
-   * Busca todos os médicos
+   * Mapeia um usuário da API para o formato usado no frontend
    */
+  mapApiUserToUser(apiUser: ApiUser): User {
+    const baseUser = {
+      id: apiUser.id.toString(),
+      name: apiUser.nome,
+      email: apiUser.email,
+      let image: string;
+        if (apiUser.tipo === 'ADMIN') {
+        // NOVO - Ícone de avatar para admins - SVG simples de usuário
+          image = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjUwIiBmaWxsPSIjNjY2NjY2Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNTAgNjVDMzUgNjUgMjUgNzUgMjUgODVWOTVINzVWODVDNzUgNzUgNjUgNjUgNTAgNjVaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K';
+        } else {
+          // Fotos aleatórias para médicos e pacientes
+          image = `https://randomuser.me/api/portraits/${apiUser.id % 2 === 0 ? 'men' : 'women'}/${(apiUser.id % 10) + 1}.jpg`;
+        }
+    };
+
+    switch (apiUser.tipo) {
+      case 'ADMIN':
+        return { ...baseUser, role: 'admin' as const };
+          case 'MEDICO':
+            return { ...baseUser,
+        role: 'doctor' as const,
+        specialty: apiUser.especialidade || 'Especialidade não informada'};
+      case 'PACIENTE':
+        return { ...baseUser, role: 'patient' as const };
+      default:
+        throw new Error(`Tipo de usuário inválido: ${apiUser.tipo}`);
+    }
+  },
+
   async getAllDoctors(): Promise<User[]> {
     try {
       const doctors = await apiClient.get<ApiUser[]>(API_ENDPOINTS.DOCTORS);
@@ -102,10 +131,7 @@ export const authApiService = {
       throw new Error('Erro ao carregar médicos');
     }
   },
-
-  /**
-   * Busca médicos por especialidade
-   */
+  
   async getDoctorsBySpecialty(specialty: string): Promise<User[]> {
     try {
       const doctors = await apiClient.get<ApiUser[]>(
@@ -115,47 +141,6 @@ export const authApiService = {
     } catch (error) {
       console.error('Erro ao buscar médicos por especialidade:', error);
       throw new Error('Erro ao carregar médicos da especialidade');
-    }
-  },
-
-  /**
-   * Faz logout
-   */
-  async signOut(): Promise<void> {
-    // Remove o token do cliente da API
-    apiClient.setToken(null);
-  },
-
-  /**
-   * Mapeia um usuário da API para o formato usado no frontend
-   */
-  mapApiUserToUser(apiUser: ApiUser): User {
-    const baseUser = {
-      id: apiUser.id.toString(),
-      name: apiUser.nome,
-      email: apiUser.email,
-      image: `https://randomuser.me/api/portraits/${apiUser.id % 2 === 0 ? 'men' : 'women'}/${(apiUser.id % 10) + 1}.jpg`,
-    };
-
-    switch (apiUser.tipo) {
-      case 'ADMIN':
-        return {
-          ...baseUser,
-          role: 'admin' as const,
-        };
-      case 'MEDICO':
-        return {
-          ...baseUser,
-          role: 'doctor' as const,
-          specialty: 'Especialidade não informada', // TODO: Buscar da API de especialidades
-        };
-      case 'PACIENTE':
-        return {
-          ...baseUser,
-          role: 'patient' as const,
-        };
-      default:
-        throw new Error(`Tipo de usuário inválido: ${apiUser.tipo}`);
     }
   },
 };
