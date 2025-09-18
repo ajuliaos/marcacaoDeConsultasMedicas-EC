@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
   REGISTERED_USERS: '@MedicalApp:registeredUsers',
 };
 
-// DADOS MOCKADOS - MANTIDOS APENAS PARA COMPATIBILIDADE COM COMPONENTES ANTIGOS
+// ⚠️ DADOS MOCKADOS - MANTIDOS APENAS PARA COMPATIBILIDADE COM COMPONENTES ANTIGOS
 // TODO: Remover quando todos os componentes estiverem usando authApiService
 
 // Médicos mockados (DEPRECATED - usar authApiService.getAllDoctors())
